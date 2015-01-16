@@ -27,6 +27,12 @@ sudo docker run -p 80:80 --link web1:webapp nginx
 
 Alright, now we might need to persist data inside a database. Go to `database/` and get a db running:
 
+```
+docker build -t postgresql .
+docker run \
+  -v /tmp/psql:/var/lib/postgresql \
+  --name database postgresql
+```
 __TODO__
 
 ### Plug-in a backend to the web app

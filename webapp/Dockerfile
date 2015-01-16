@@ -8,6 +8,11 @@ ENV PORT 3000
 # Application working directory
 WORKDIR /home/app
 
+# System dependencies: Add here any librairies needed for certain gems
+RUN apt-get update
+RUN apt-get install -y libpq-dev
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 # Copy code
 COPY ./ /home/app
 
