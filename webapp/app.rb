@@ -1,14 +1,26 @@
 require 'sinatra'
 require 'haml'
 require 'pg'
+require 'uri'
+require 'json'
 
 class App < Sinatra::Base
   configure { set :server, :puma }
-  conn = PG::Connection.open(dbname: ENV['WEBAPP_DATABASE_NAME'], user: ENV['WEBAPP_DATABASE_USERNAME'], password: ENV['WEBAPP_DATABASE_PASSWORD'])
-  conn.exec('CREATE TABLE IF NOT EXISTS books (
-               PID INT NOT NULL AUTO_INCREMENT,
-               PRIMARY KEY(PID), title VARCHAR(32),
-               isbn INT(13) )')
+
+  # PostgreSQL connection
+  if ENV['WEBAPP_ENV_DATABASE_ACTIVATED']
+    conn_uri = URI.parse(ENV['WEBAPP_PORT'])
+    conn = PG::Connection.open(
+                               host: conn_uri.host,
+                               port: conn_uri.port,
+                               dbname: ENV['WEBAPP_ENV_DATABASE_NAME'],
+                               user: ENV['WEBAPP_ENV_DATABASE_USER'],
+                               password: ENV['WEBAPP_ENV_DATABASE_PASSWORD'])
+    # Database setup
+    conn.exec('CREATE TABLE IF NOT EXISTS books (
+               isbn integer,
+               PRIMARY KEY(isbn), title VARCHAR(32) )')
+  end
 
   get '/' do
     haml '%h1 Hello from Sinatra!'
@@ -19,10 +31,14 @@ class App < Sinatra::Base
   end
 
   post '/books' do
-    conn.exec_params("INSERT INTO books (title, isbn) VALUES ('$1', '$2')", [params[:title], params[:isbn]])
+    haml "%p Oups wrong parameters. We expect a title and an isbn number" if params[:title].nil? || params[:isbn].nil?
+    if conn
+      conn.exec_params("INSERT INTO books (title, isbn) VALUES ($1, $2)", [params[:title], params[:isbn]])
+      201
+    end
   end
 
   get '/books' do
-    conn.exec('SELECT * FROM books')
+    conn.exec('SELECT * FROM books').map(&:to_h).to_json if conn
   end
 end
