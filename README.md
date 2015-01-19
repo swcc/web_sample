@@ -9,7 +9,7 @@ Head to the `webapp/` directory, take a look around, you'll find a very basic Si
 This is how you'll make in run:
 ```
 docker build -t webapp .
-sudo docker run --name web1 webapp
+sudo docker run --name webapp webapp
 ```
 
 ### Serving with Nginx
@@ -19,7 +19,7 @@ Now that we've got an app running, we'll need a web server to control the traffi
 And run the server:
 ```
 docker build -t nginx .
-sudo docker run -p 80:80 --link web1:webapp nginx
+sudo docker run -p 80:80 --link webapp:webapp nginx
 ```
 
 
@@ -42,5 +42,7 @@ Let's add a backend linked to our app. Take a look at `backend/`
 __TODO__
 
 ### Add an Message Passing software between backends
+
+Hello  `amqp/`
 
 __TODO__
